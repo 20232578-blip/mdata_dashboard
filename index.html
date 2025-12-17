@@ -17,24 +17,18 @@
     /* --- 기본 설정 --- */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Noto Sans KR', sans-serif; color: #333; background-color: #fff; }
-
-    /* --- 메인 컨테이너 --- */
+    
+    /* --- 메인 컨테이너 (바로 표시) --- */
     #main-ui { 
-        display: none; 
+        display: flex; /* 바로 표시 */
         width: 100%; 
         flex-direction: column; 
         align-items: center; 
-        animation: slideUp 0.8s ease-out;
-    }
-
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
     }
 
     /* --- 상단 고정 헤더 이미지 --- */
     .header-image-wrapper {
-        position: sticky; top: 0; z-index: 1000;
+        top: 0; z-index: 1000;
         width: 100%; background-color: #fff;
         display: flex; justify-content: center;
         border-bottom: 1px solid #eee;
@@ -67,9 +61,9 @@
     .link-text:hover { color: #000; text-decoration-color: #000; }
     .separator { margin: 0 2px; color: #333; display: inline-block; }
 
-    /* --- AI Dashboard Styles (Fine-tuned Layout) --- */
+    /* --- AI Dashboard Styles --- */
     .ai_dashboard { 
-        display: block;
+        display: block; /* 항상 보이도록 변경 */
         margin-top: 20px; 
         background-color: #fff; 
         border-radius: 12px; 
@@ -95,10 +89,11 @@
     }
     
     /* Score Card */
-    .dash_card.score { align-items: center; text-align: center; background: #fff; color: #333; justify-content: flex-start; }
+    .dash_card.score { align-items: center; text-align: center; background: #fff; border: 1px solid #eee; color: #333; position: relative; overflow: hidden; justify-content: flex-start; }
     .score_label { width: 100%; text-align: left; font-size: 14px; font-weight: 700; color: #333; margin-bottom: 15px; letter-spacing: -0.5px; position: relative; z-index: 2; height: 24px; display: flex; align-items: center; }
     .score_label i { margin-right: 6px; color: #FF243E; }
     
+    /* Circular Progress */
     .score-circle { position: relative; width: 160px; height: 160px; border-radius: 50%; background: conic-gradient(#FF243E 0% 58%, #eee 58% 100%); display: flex; align-items: center; justify-content: center; margin: auto 0; }
     .score-circle::before { content: ''; position: absolute; width: 136px; height: 136px; background: #fff; border-radius: 50%; }
     
@@ -165,16 +160,12 @@
         .dash_card.score { padding: 30px 20px; }
         .comment-write-box { flex-direction: column; align-items: stretch; }
         .comment-btn { width: 100%; height: 50px; }
-        .intro-content { padding: 20px; }
-        .next-step-btn { padding: 12px 30px; font-size: 16px; }
     }
 </style>
 </head>
 <body>
 
-
-
-<!-- 2. Main UI (After) - initially hidden -->
+<!-- 2. Main UI (After) - initially visible -->
 <div id="main-ui" class="container">
     <div class="header-image-wrapper">
         <img src="top.png" alt="Movie Header Image" class="header-image" onerror="this.style.backgroundColor='#eee'; this.style.height='200px'; this.alt='[이미지 로드 실패]';">
@@ -316,17 +307,6 @@
 
 <!-- Scripts -->
 <script>
-    // --- 인트로 -> 메인 전환 ---
-    function startExperience() {
-        document.getElementById('intro-screen').style.display = 'none';
-        document.getElementById('main-ui').style.display = 'flex';
-        window.dispatchEvent(new Event('resize'));
-        setTimeout(() => {
-            initCharts();
-            drawWordCloud(); // 대시보드 열릴 때 워드클라우드 실행
-        }, 100);
-    }
-
     // --- 탭 전환 로직 ---
     function switchTab(tabName, element) {
         const tabs = document.querySelectorAll('.tab-item');
@@ -464,14 +444,21 @@
         renderRadar(type);
     }
 
-    // onload: 차트 자동 실행 X (버튼 눌러야 실행)
+    // onload: 바로 메인 페이지 기능 실행
     window.onload = function() {
+        // 차트 초기화 (즉시 실행)
+        initCharts();
+        
+        // 워드클라우드 실행 (지연 없이)
+        drawWordCloud();
+
+        // 리사이즈 이벤트 대응
         let resizeTimer;
         window.onresize = () => {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => {
                 if (radarChart) radarChart.resize();
-                // 상세 탭이 보일 때만 워드클라우드 리사이즈
+                // 상세 탭이 보일 때 워드클라우드 리사이즈
                 if (document.getElementById('detail-view').style.display === 'block') {
                     drawWordCloud();
                 }
